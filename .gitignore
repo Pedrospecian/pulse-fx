@@ -1,0 +1,11 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/backend/gateway/node_modules
+/backend/services/users/node_modules
+/frontend/node_modules
+
+# production
+
+# misc
+.env
