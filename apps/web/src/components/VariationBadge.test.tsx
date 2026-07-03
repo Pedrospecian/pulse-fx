@@ -15,6 +15,7 @@ describe("VariationBadge", () => {
   });
 
   it("mostra mensagem de dado insuficiente quando variação é null", () => {
-
+    render(<VariationBadge variationPercent={null} />);
+    expect(screen.getByTestId("variation-badge")).toHaveTextContent("sem dado suficiente");
   });
 });
