@@ -8,8 +8,9 @@ import { fetchPtax, fetchSgsSeries } from "../integrations/bcbClient";
 import { fetchFredObservations } from "../integrations/fredClient";
 import { publishIndicatorUpdated } from "../messaging/publisher";
 
-const FRED_API_KEY = process.env.FRED_API_KEY;
+const FRED_API_KEY = process.env.FRED_API_KEY || "";
 
+// Janela de busca no histórico: diária cobre ~1 ano, mensal cobre ~5 anos
 function getLookbackWindow(indicator: IndicatorDefinition): Date {
   const start = new Date();
   const daysBack = indicator.seriesType === "DAILY" ? 400 : 1900;
@@ -34,7 +35,17 @@ async function fetchFromSource(indicator: IndicatorDefinition, start: Date, end:
   }
 }
 
+/*
+ * Sincroniza um indicador se o TTL tiver expirado (ou se `force` for true).
+ * Retorna um resumo do resultado, usado tanto pelo cron quanto pela rota admin.
+ */
 export async function syncIndicator(indicator: IndicatorDefinition, options: { force?: boolean; ttlMinutes: number }) {
+  const stale = options.force || (await syncStateRepository.isStale(indicator.code, options.ttlMinutes));
+
+  if (!stale) {
+    return { code: indicator.code, skipped: true as const };
+  }
+
   try {
     const end = new Date();
     const start = getLookbackWindow(indicator);
