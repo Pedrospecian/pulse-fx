@@ -17,6 +17,7 @@ export function IndicatorCard({ indicator, isFavorite, onToggleFavorite }: Props
         </Link>
         <button
           onClick={() => onToggleFavorite(indicator.code)}
+          aria-label={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
           style={{ border: "none", background: "none", cursor: "pointer", fontSize: 18 }}
         >
           {isFavorite ? "★" : "☆"}
@@ -32,7 +33,7 @@ export function IndicatorCard({ indicator, isFavorite, onToggleFavorite }: Props
 
       <p style={{ fontSize: 12, color: "#444444", marginTop: 8 }}>
         Ref.:{" "}
-        {indicator.lastReferenceDate 
+        {indicator.lastReferenceDate
           ? new Date(indicator.lastReferenceDate).toLocaleDateString("pt-BR")
           : "—"}
       </p>
