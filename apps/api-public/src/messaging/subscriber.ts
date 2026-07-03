@@ -1,4 +1,5 @@
 import amqplib from "amqplib";
+import { cacheInvalidate, cacheInvalidatePrefix } from "../cache/inMemoryCache";
 
 const RABBITMQ_URL = process.env.RABBITMQ_URL || "amqp://localhost:5672";
 const EVENTS_EXCHANGE = "pulse-fx.events";
@@ -16,9 +17,13 @@ export async function startIndicatorEventsSubscriber() {
     if (!msg) {
       return;
     }
-
+    
     try {
       const payload = JSON.parse(msg.content.toString()) as { indicatorCode: string };
+
+      // Como o dashboard agrega todos os indicadores, qualquer atualização nos indicadores invalida o cache.
+      cacheInvalidate("dashboard");
+      cacheInvalidatePrefix(`detail:${payload.indicatorCode}`);
 
       console.log(`[messaging] cache invalidado para ${payload.indicatorCode}`);
       channel.ack(msg);
