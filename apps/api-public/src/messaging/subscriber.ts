@@ -16,9 +16,11 @@ export async function startIndicatorEventsSubscriber() {
     if (!msg) {
       return;
     }
-    
+
     try {
       const payload = JSON.parse(msg.content.toString()) as { indicatorCode: string };
+
+      console.log(`[messaging] cache invalidado para ${payload.indicatorCode}`);
       channel.ack(msg);
     } catch (err) {
       console.error("[messaging] erro ao processar evento:", err);

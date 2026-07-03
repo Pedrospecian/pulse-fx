@@ -5,12 +5,15 @@ import {
   favoriteRepository,
   calculateVariationForSeriesType,
 } from "@pulse-fx/core";
+import { cacheGet, cacheSet } from "../cache/inMemoryCache";
 
 // Janela de histórico exibida na tela de detalhe, por tipo de série.
 const HISTORY_WINDOW_DAYS = { DAILY: 90, MONTHLY: 730 } as const;
 
 async function buildIndicatorSummary(indicator: Awaited<ReturnType<typeof indicatorRepository.findByCode>>) {
-  if (!indicator) return null;
+  if (!indicator) {
+    return null;
+  }
 
   const windowDays = HISTORY_WINDOW_DAYS[indicator.seriesType];
   const historyAsc = await observationRepository.findHistory(indicator.code, windowDays);
@@ -32,14 +35,25 @@ async function buildIndicatorSummary(indicator: Awaited<ReturnType<typeof indica
 }
 
 export async function getDashboard(_req: Request, res: Response) {
+  const cached = cacheGet("dashboard");
+  if (cached) {
+    return res.json(cached);
+  }
+
   const indicators = await indicatorRepository.findAll();
   const summaries = await Promise.all(indicators.map(buildIndicatorSummary));
 
+  cacheSet("dashboard", summaries);
   res.json(summaries);
 }
 
 export async function getIndicatorDetail(req: Request, res: Response) {
   const { code } = req.params;
+  const cacheKey = `detail:${code}`;
+  const cached = cacheGet(cacheKey);
+  if (cached) {
+    return res.json(cached);
+  }
 
   const indicator = await indicatorRepository.findByCode(code);
   if (!indicator) {
@@ -59,6 +73,7 @@ export async function getIndicatorDetail(req: Request, res: Response) {
       "Utilizamos o último dado válido conhecido, sem interpolação.",
   };
 
+  cacheSet(cacheKey, payload);
   res.json(payload);
 }
 
@@ -72,9 +87,11 @@ export async function listFavorites(_req: Request, res: Response) {
 export async function addFavorite(req: Request, res: Response) {
   const { code } = req.params;
   const indicator = await indicatorRepository.findByCode(code);
+
   if (!indicator) {
     return res.status(404).json({ error: "Indicador não encontrado" });
   }
+
   await favoriteRepository.add(code);
   res.status(204).send();
 }
