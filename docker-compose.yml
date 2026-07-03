@@ -6,85 +6,104 @@ services:
   # ---------------------------------------------------------------
   postgres:
     image: postgres:16-alpine
-    container_name: postgres
+    container_name: pulsefx-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-app}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
-      POSTGRES_DB: ${POSTGRES_DB:-appdb}
+      POSTGRES_USER: ${POSTGRES_USER:-pulsefx}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pulsefx}
+      POSTGRES_DB: ${POSTGRES_DB:-pulsefx}
     ports:
       - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-app}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pulsefx} -d ${POSTGRES_DB:-pulsefx}"]
       interval: 5s
       timeout: 5s
       retries: 10
-    networks:
-      - backend-net
 
   # ---------------------------------------------------------------
   # Mensageria (RabbitMQ)
   # ---------------------------------------------------------------
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
-    container_name: rabbitmq
+    container_name: pulsefx-rabbitmq
     restart: unless-stopped
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-app}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-app}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-pulsefx}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-pulsefx}
     ports:
-      - "5672:5672"   # protocolo AMQP (usado pelos serviços)
-      - "15672:15672" # painel web de administração
+      - "5672:5672"
+      - "15672:15672"
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
       timeout: 5s
       retries: 10
-    networks:
-      - backend-net
 
   # ---------------------------------------------------------------
-  # Microsserviço: users
+  # api-public: dashboard, detalhe, favoritos (leitura)
   # ---------------------------------------------------------------
-  service-users:
+  api-public:
     build:
-      context: ./apps/backend/services/users
-    container_name: service-users
+      context: .
+      dockerfile: apps/api-public/Dockerfile
+    container_name: pulsefx-api-public
     restart: unless-stopped
     environment:
-      PORT: 4001
-      DATABASE_URL: postgres://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@postgres:5432/${POSTGRES_DB:-appdb}
-      RABBITMQ_URL: amqp://${RABBITMQ_USER:-app}:${RABBITMQ_PASS:-app}@rabbitmq:5672
+      PORT: ${API_PUBLIC_PORT:-4001}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-pulsefx}:${POSTGRES_PASSWORD:-pulsefx}@postgres:5432/${POSTGRES_DB:-pulsefx}?schema=public
+      RABBITMQ_URL: ${RABBITMQ_URL}
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    networks:
-      - backend-net
-    # não expor porta pública: só o gateway fala com este serviço
+      migrate:
+        condition: service_completed_successfully
 
   # ---------------------------------------------------------------
-  # API Gateway - único ponto de entrada HTTP para o frontend
+  # api-sync: cron de sincronização BCB/FRED + rota admin protegida
+  # --------------------------------------------------------------- 
+  api-sync:
+    build:
+      context: .
+      dockerfile: apps/api-sync/Dockerfile
+    container_name: pulsefx-api-sync
+    restart: unless-stopped
+    environment:
+      PORT: ${API_SYNC_PORT:-4002}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-pulsefx}:${POSTGRES_PASSWORD:-pulsefx}@postgres:5432/${POSTGRES_DB:-pulsefx}?schema=public
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      FRED_API_KEY: ${FRED_API_KEY}
+      ADMIN_API_KEY: ${ADMIN_API_KEY:-troque-por-um-segredo-forte}
+      SYNC_TTL_MINUTES: ${SYNC_TTL_MINUTES:-60}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  # ---------------------------------------------------------------
+  # Gateway: /api/* -> api-public | /admin/* -> api-sync
   # ---------------------------------------------------------------
   gateway:
     build:
-      context: ./apps/backend/gateway
-    container_name: gateway
+      context: .
+      dockerfile: apps/gateway/Dockerfile
+    container_name: pulsefx-gateway
     restart: unless-stopped
     environment:
-      PORT: 4000
-      USERS_SERVICE_URL: http://service-users:4001
+      PORT: ${GATEWAY_PORT:-4000}
+      API_PUBLIC_URL: http://api-public:${API_PUBLIC_PORT:-4001}
+      API_SYNC_URL: http://api-sync:${API_SYNC_PORT:-4002}
     ports:
-      - "4000:4000"
+      - "${GATEWAY_PORT:-4000}:${GATEWAY_PORT:-4000}"
     depends_on:
-      - service-users
-    networks:
-      - backend-net
-      - frontend-net
+      - api-public
+      - api-sync
 
   # ---------------------------------------------------------------
   # Frontend (React + TypeScript via Vite)
@@ -100,12 +119,6 @@ services:
       - "5173:80"
     depends_on:
       - gateway
-
-networks:
-  backend-net:
-    driver: bridge
-  frontend-net:
-    driver: bridge
 
 volumes:
   pgdata:

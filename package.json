@@ -1,0 +1,21 @@
+{
+  "name": "pulse-fx",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev -w apps/web",
+    "dev:gateway": "npm run dev -w apps/gateway",
+    "dev:api-public": "npm run dev -w apps/api-public",
+    "dev:api-sync": "npm run dev -w apps/api-sync",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "prisma:generate": "npm run generate -w packages/db",
+    "prisma:migrate": "npm run migrate:dev -w packages/db"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.3"
+  }
+}
