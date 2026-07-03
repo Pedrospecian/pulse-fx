@@ -54,4 +54,18 @@ describe("indicatorsRouter", () => {
     expect(res.body[0].variationPercent).toBe(10);
   });
 
+  it("GET /api/indicators/:code retorna 404 para indicador inexistente", async () => {
+    const core = await import("@pulse-fx/core");
+    vi.mocked(core.indicatorRepository.findByCode).mockResolvedValueOnce(null as any);
+
+    const res = await request(app).get("/api/indicators/DOES_NOT_EXIST");
+    expect(res.status).toBe(404);
+  });
+
+  it("GET /api/indicators/:code retorna o histórico e a data de referência correta", async () => {
+    const res = await request(app).get("/api/indicators/USD_BRL_PTAX");
+    expect(res.status).toBe(200);
+    expect(res.body.history).toHaveLength(2);
+    expect(res.body.lastValue).toBe(5.5);
+  });
 });
