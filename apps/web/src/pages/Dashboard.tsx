@@ -31,7 +31,7 @@ export function Dashboard() {
     }
   }
 
-  if (loading) return <p>Carregando indicadores</p>;
+  if (loading) return <p>Carregando indicadores...</p>;
 
   return (
     <div>

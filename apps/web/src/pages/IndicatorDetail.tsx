@@ -17,14 +17,18 @@ export function IndicatorDetail() {
       .finally(() => setLoading(false));
   }, [code]);
 
-  if (loading) return <p>Carregando.</p>;
+  if (loading) return <p>Carregando...</p>;
   if (!data) return <p>Indicador não encontrado.</p>;
 
   return (
     <div>
+      <Link to="/">Voltar</Link>
       <h1>{data.name}</h1>
       <p>{data.description}</p>
 
+      <p style={{ fontSize: 28 }}>
+        {data.lastValue?.toLocaleString("pt-BR", { maximumFractionDigits: 4 })} <small>{data.unit}</small>
+      </p>
       <VariationBadge variationPercent={data.variationPercent} />
 
       <table style={{ marginTop: 24, borderCollapse: "collapse", width: "100%" }}>
