@@ -6,12 +6,19 @@ import { VariationBadge } from "../components/VariationBadge";
 export function IndicatorDetail() {
   const { code } = useParams<{ code: string }>();
   const [data, setData] = useState<IndicatorDetailType | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!code) return;
+    setLoading(true);
     api
       .getIndicatorDetail(code)
-      .then(setData);
+      .then(setData)
+      .finally(() => setLoading(false));
   }, [code]);
+
+  if (loading) return <p>Carregando.</p>;
+  if (!data) return <p>Indicador não encontrado.</p>;
 
   return (
     <div>
