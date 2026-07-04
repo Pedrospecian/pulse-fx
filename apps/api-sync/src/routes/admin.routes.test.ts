@@ -24,14 +24,18 @@ describe("adminRouter", () => {
   });
 
   it("rejeita requisição sem o header X-Admin-Key", async () => {
-
+    const res = await request(app).post("/admin/sync");
+    expect(res.status).toBe(401);
   });
 
   it("rejeita requisição com chave incorreta", async () => {
-
+    const res = await request(app).post("/admin/sync").set("X-Admin-Key", "chave-errada");
+    expect(res.status).toBe(401);
   });
 
   it("aceita requisição com a chave correta e dispara o sync", async () => {
-
+    const res = await request(app).post("/admin/sync").set("X-Admin-Key", "test-secret");
+    expect(res.status).toBe(200);
+    expect(res.body.results).toEqual([{ code: "USD_BRL_PTAX", skipped: true }]);
   });
 });
