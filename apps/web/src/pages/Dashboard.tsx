@@ -2,7 +2,7 @@ import styled from "styled-components";
 import { useEffect, useState } from "react";
 import { api, type IndicatorSummary } from "../lib/api";
 import { IndicatorCard } from "../components/IndicatorCard";
-import { Text } from "../assets/components";
+import { Text, PageTitle } from "../assets/components";
 
 const CardsWrapper = styled.div`
   display: flex;
@@ -44,7 +44,7 @@ export function Dashboard() {
 
   return (
     <div>
-      <h1>Pulse FX</h1>
+      <PageTitle>Página Inicial</PageTitle>
       <Text>
         Este conteúdo não é recomendação de investimento, mas sim educacional.
       </Text>

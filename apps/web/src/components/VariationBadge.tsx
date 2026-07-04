@@ -1,4 +1,5 @@
 import styled, { css } from "styled-components";
+import { FaCaretUp, FaCaretDown } from "react-icons/fa";
 
 interface VariationBadgeProps {
   variationPercent: number | null;
@@ -6,6 +7,11 @@ interface VariationBadgeProps {
 
 const Badge = styled.span<{ $isPositive: boolean | null }>`
   font-weight: 600;
+  font-size: 75%;
+  color: #ffffff;
+  border-radius: 6px;
+  margin-left: 12px;
+  padding: 3px 6px;
 
   ${({ $isPositive }) =>
     $isPositive === null
@@ -14,7 +20,7 @@ const Badge = styled.span<{ $isPositive: boolean | null }>`
           font-weight: 400;
         `
       : css`
-          color: ${$isPositive ? "green" : "red"};
+          background-color: ${$isPositive ? "#55b542" : "#ff6552"};
         `}
 `;
 
@@ -32,6 +38,7 @@ export function VariationBadge({ variationPercent }: VariationBadgeProps) {
 
   return (
     <Badge data-testid="variation-badge" $isPositive={isPositive}>
+      {isPositive ? <FaCaretUp /> : <FaCaretDown />}
       {formatted}
     </Badge>
   );

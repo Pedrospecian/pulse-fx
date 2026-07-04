@@ -10,7 +10,7 @@ const Main = styled.main`
   padding-top: 32px;
   padding-bottom: 32px;
   color: #ffffff;
-  background-color: #2d2d3f;
+  background-color: #2d2d34;
 `;
 
 export default function App() {

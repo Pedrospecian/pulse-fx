@@ -5,7 +5,7 @@ const HeaderComponent = styled.header`
   font-family: sans-serif;
   font-size: 32px;
   color: #ffffff;
-  background-color: #435472;
+  background-color: #434452;
   font-weight: 700;
   padding: 16px;
 `;

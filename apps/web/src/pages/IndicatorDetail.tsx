@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { api, type IndicatorDetail as IndicatorDetailType } from "../lib/api";
 import { VariationBadge } from "../components/VariationBadge";
 import { FaArrowLeft } from "react-icons/fa";
+import { PageTitle, BackButton } from "../assets/components";
 
 const IndicatorTable = styled.table`
   margin-top: 24px;
@@ -15,19 +16,6 @@ const LimitationsText = styled.p`
   font-size: 12px;
   color: #999999;
   margin-top: 16px;
-`;
-
-const BackButton = styled(Link)`
-  color: #ffffff;
-  text-decoration: none;
-  border-radius: 6px;
-  padding: 9px;
-  box-sizing: border-box;
-  background-color: #444444;
-  width: 100px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 `;
 
 export function IndicatorDetail() {
@@ -45,17 +33,24 @@ export function IndicatorDetail() {
   }, [code]);
 
   if (loading) return <p>Carregando...</p>;
-  if (!data) return <p>Indicador não encontrado.</p>;
+  if (!data) return (<div>
+    <p>Indicador não encontrado.</p>
+
+    <BackButton to="/">
+      <FaArrowLeft size={16} style={{ marginRight: '6px' }} />
+      Voltar
+    </BackButton>
+  </div>);
 
   return (
     <div>
-      <h1>{data.name}</h1>
+      <PageTitle>{data.name}</PageTitle>
       <p>{data.description}</p>
 
       <p style={{ fontSize: 28 }}>
-        {data.lastValue?.toLocaleString("pt-BR", { maximumFractionDigits: 4 })} <small>{data.unit}</small>
+        Último valor: {data.lastValue?.toLocaleString("pt-BR", { maximumFractionDigits: 4 })} <small>{data.unit}</small>
+        <VariationBadge variationPercent={data.variationPercent} />
       </p>
-      <VariationBadge variationPercent={data.variationPercent} />
 
       <IndicatorTable>
         <thead>

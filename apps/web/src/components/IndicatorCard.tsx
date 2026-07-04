@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import { Link } from "react-router-dom";
 import { FaRegStar, FaStar } from "react-icons/fa";
 import type { IndicatorSummary } from "../lib/api";
@@ -10,23 +10,32 @@ interface Props {
   onToggleFavorite: (code: string) => void;
 }
 
-const Card = styled.div`
+const Card = styled.div<{ $isPositive: boolean }>`
   border-radius: 8px;
-  min-width: 220px;
-  background-color: #1d1d1d88;
+  min-width: 260px;
+  box-sizing: border-box;
+  //background-color: #1d1d1d88;
+  ${({ $isPositive }) =>
+    css`
+      background-color: ${$isPositive ? "#3d6d3d88" : "#7d3d3d88"};
+    `}
 `;
 
 const CardHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #15151588;
+  background-color: #15151544;
   border-radius: 8px 8px 0px 0px;
   padding: 16px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const CardBody = styled.div`
   padding: 16px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const Title = styled(Link)`
@@ -43,6 +52,7 @@ const FavoriteButton = styled.button`
   color: #ffbb00;
   display: flex;
   align-items: center;
+  margin-left: 6px;
 `;
 
 const Value = styled.p`
@@ -57,8 +67,9 @@ const ReferenceDate = styled.p`
 `;
 
 export function IndicatorCard({ indicator, isFavorite, onToggleFavorite }: Props) {
+  const isPositive = indicator.variationPercent >= 0;
   return (
-    <Card>
+    <Card $isPositive={isPositive}>
       <CardHeader>
         <Title to={`/indicadores/${indicator.code}`}>{indicator.name}</Title>
         <FavoriteButton
@@ -73,9 +84,8 @@ export function IndicatorCard({ indicator, isFavorite, onToggleFavorite }: Props
         <Value>
           {indicator.lastValue?.toLocaleString("pt-BR", { maximumFractionDigits: 4 }) ?? "—"}{" "}
           <small>{indicator.unit}</small>
+          <VariationBadge variationPercent={indicator.variationPercent} />
         </Value>
-
-        <VariationBadge variationPercent={indicator.variationPercent} />
 
         <ReferenceDate>
           Ref.:{" "}
