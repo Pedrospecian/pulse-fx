@@ -13,15 +13,18 @@ const Badge = styled.span<{ $isPositive: boolean | null }>`
   margin-left: 12px;
   padding: 3px 6px;
 
-  ${({ $isPositive }) =>
-    $isPositive === null
-      ? css`
-          color: #999999;
-          font-weight: 400;
-        `
-      : css`
-          background-color: ${$isPositive ? "#55b542" : "#ff6552"};
-        `}
+  ${({ $isNeutral, $isPositive }) => {
+    if ($isNeutral) {
+      return css`
+        background-color: #555555;
+      `
+    }
+
+    return css`
+        background-color: ${$isPositive ? "#55b542" : "#ff6552"};
+      `
+    }
+  }
 `;
 
 export function VariationBadge({ variationPercent }: VariationBadgeProps) {
@@ -34,11 +37,12 @@ export function VariationBadge({ variationPercent }: VariationBadgeProps) {
   }
 
   const isPositive = variationPercent >= 0;
-  const formatted = `${isPositive ? "+" : ""}${variationPercent.toFixed(2)}%`;
+  const isNeutral = variationPercent === 0;
+  const formatted = `${(isPositive && !isNeutral) ? "+" : ""}${variationPercent.toFixed(2)}%`;
 
   return (
-    <Badge data-testid="variation-badge" $isPositive={isPositive}>
-      {isPositive ? <FaCaretUp /> : <FaCaretDown />}
+    <Badge data-testid="variation-badge" $isNeutral={isNeutral} $isPositive={isPositive}>
+      {isNeutral ? '' : isPositive ? <FaCaretUp /> : <FaCaretDown />}
       {formatted}
     </Badge>
   );

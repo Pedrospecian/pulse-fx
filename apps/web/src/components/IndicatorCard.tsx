@@ -14,11 +14,18 @@ const Card = styled.div<{ $isPositive: boolean }>`
   border-radius: 8px;
   min-width: 260px;
   box-sizing: border-box;
-  //background-color: #1d1d1d88;
-  ${({ $isPositive }) =>
-    css`
-      background-color: ${$isPositive ? "#3d6d3d88" : "#7d3d3d88"};
-    `}
+  ${({ $isNeutral, $isPositive }) => {
+    if ($isNeutral) {
+      return css`
+        background-color: #5d5d5d88;
+      `;
+    }
+
+    return css`
+        background-color: ${$isPositive ? "#6d8d5d88" : "#8d4d4d88"};
+      `
+    }
+  }
 `;
 
 const CardHeader = styled.div`
@@ -67,9 +74,10 @@ const ReferenceDate = styled.p`
 `;
 
 export function IndicatorCard({ indicator, isFavorite, onToggleFavorite }: Props) {
+  const isNeutral = indicator.variationPercent === 0;
   const isPositive = indicator.variationPercent >= 0;
   return (
-    <Card $isPositive={isPositive}>
+    <Card $isNeutral={isNeutral} $isPositive={isPositive}>
       <CardHeader>
         <Title to={`/indicadores/${indicator.code}`}>{indicator.name}</Title>
         <FavoriteButton
