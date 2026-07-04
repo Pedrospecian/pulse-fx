@@ -1,5 +1,8 @@
 generator client {
   provider      = "prisma-client-js"
+  // "native" cobre o ambiente de dev local (macOS/Linux glibc); o segundo
+  // target é o engine correto para as imagens node:*-alpine (musl + OpenSSL 3),
+  // usadas em todos os Dockerfiles deste monorepo.
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
@@ -14,18 +17,20 @@ enum SeriesSource {
 }
 
 enum SeriesType {
-  DAILY   // ex.: câmbio (PTAX) — variação comparada em dias úteis
-  MONTHLY // ex.: indicadores macro — variação comparada em meses
+  DAILY   // ex.: câmbio (PTAX) -> variação comparada em dias úteis
+  MONTHLY // ex.: indicadores macro -> variação comparada em meses
 }
 
+/// Catálogo de indicadores expostos pelo Pulse FX.
+/// O "code" é o identificador estável usado pelo frontend e pelas rotas.
 model Indicator {
   code           String       @id
   name           String
   description    String
   source         SeriesSource
-  sourceSeriesId String
+  sourceSeriesId String       // ex.: código SGS/PTAX no BCB, ou series_id no FRED
   seriesType     SeriesType
-  unit           String
+  unit           String       // ex.: "BRL", "%", "index"
   createdAt      DateTime     @default(now())
 
   observations Observation[]
@@ -35,6 +40,7 @@ model Indicator {
   @@map("indicators")
 }
 
+/// Uma observação (ponto) da série temporal de um indicador.
 model Observation {
   id            Int       @id @default(autoincrement())
   indicatorCode String
@@ -48,6 +54,8 @@ model Observation {
   @@map("observations")
 }
 
+/// "Meus indicadores": favoritos persistidos no backend.
+/// MVP de usuário único (sem autenticação multiusuário)
 model Favorite {
   indicatorCode String    @id
   indicator     Indicator @relation(fields: [indicatorCode], references: [code])
@@ -56,6 +64,8 @@ model Favorite {
   @@map("favorites")
 }
 
+/// Controle de TTL / última sincronização por indicador, usado pelo api-sync
+/// para evitar chamadas redundantes às APIs externas.
 model SyncState {
   indicatorCode String    @id
   indicator     Indicator @relation(fields: [indicatorCode], references: [code])

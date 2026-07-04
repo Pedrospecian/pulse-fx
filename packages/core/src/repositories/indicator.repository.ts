@@ -10,6 +10,10 @@ export const indicatorRepository = {
     return prisma.indicator.findUnique({ where: { code } });
   },
 
+  /*
+   * Garante que o catálogo estático (packages/core/catalog) esteja refletido
+   * na tabela `indicators`.
+   */
   async seedCatalog(): Promise<void> {
     for (const def of INDICATORS_CATALOG) {
       await prisma.indicator.upsert({

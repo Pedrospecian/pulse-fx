@@ -2,6 +2,7 @@ import { prisma } from "@pulse-fx/db";
 import type { ObservationPoint } from "../domain/variation";
 
 export const observationRepository = {
+  // Retorna as últimas observações de um indicador, da mais recente para a mais antiga
   async findLatest(indicatorCode: string, limit: number): Promise<ObservationPoint[]> {
     const rows = await prisma.observation.findMany({
       where: { indicatorCode },
@@ -12,6 +13,7 @@ export const observationRepository = {
     return rows.map((r) => ({ referenceDate: r.referenceDate, value: Number(r.value) }));
   },
 
+  // Histórico completo dentro de uma janela, para a tela de detalhe.
   async findHistory(indicatorCode: string, sinceDaysAgo: number): Promise<ObservationPoint[]> {
     const since = new Date();
     since.setDate(since.getDate() - sinceDaysAgo);
@@ -24,7 +26,7 @@ export const observationRepository = {
     return rows.map((r) => ({ referenceDate: r.referenceDate, value: Number(r.value) }));
   },
 
-  // Upsert idempotente (evita duplicar observação do mesmo dia).
+  // Upsert idempotente, usado pelo job de sync (evita duplicar observação do mesmo dia)
   async upsertMany(
     indicatorCode: string,
     points: Array<{ referenceDate: Date; value: number }>
@@ -45,4 +47,4 @@ export const observationRepository = {
     }
     return count;
   },
-}; 
+};
