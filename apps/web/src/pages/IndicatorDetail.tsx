@@ -18,6 +18,25 @@ const LimitationsText = styled.p`
   margin-top: 16px;
 `;
 
+const StyledRow = styled.tr`
+  background-color: transparent;
+
+  &:nth-child(2n) {
+    background-color: #55555588;
+  }
+
+  td {
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+`;
+
+const IndicatorValue = styled.p`
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+`;
+
 export function IndicatorDetail() {
   const { code } = useParams<{ code: string }>();
   const [data, setData] = useState<IndicatorDetailType | null>(null);
@@ -47,10 +66,10 @@ export function IndicatorDetail() {
       <PageTitle>{data.name}</PageTitle>
       <p>{data.description}</p>
 
-      <p style={{ fontSize: 28 }}>
+      <IndicatorValue>
         Último valor: {data.lastValue?.toLocaleString("pt-BR", { maximumFractionDigits: 4 })} <small>{data.unit}</small>
         <VariationBadge variationPercent={data.variationPercent} />
-      </p>
+      </IndicatorValue>
 
       <IndicatorTable>
         <thead>
@@ -61,10 +80,10 @@ export function IndicatorDetail() {
         </thead>
         <tbody>
           {[...data.history].reverse().map((point) => (
-            <tr key={point.referenceDate}>
+            <StyledRow key={point.referenceDate}>
               <td>{new Date(point.referenceDate).toLocaleDateString("pt-BR")}</td>
               <td style={{ textAlign: "right" }}>{point.value}</td>
-            </tr>
+            </StyledRow>
           ))}
         </tbody>
       </IndicatorTable>

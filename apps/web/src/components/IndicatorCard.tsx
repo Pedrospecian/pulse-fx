@@ -10,22 +10,11 @@ interface Props {
   onToggleFavorite: (code: string) => void;
 }
 
-const Card = styled.div<{ $isPositive: boolean }>`
+const Card = styled.div<{ $bgColor: string | null }>`
   border-radius: 8px;
   min-width: 260px;
   box-sizing: border-box;
-  ${({ $isNeutral, $isPositive }) => {
-    if ($isNeutral) {
-      return css`
-        background-color: #5d5d5d88;
-      `;
-    }
-
-    return css`
-        background-color: ${$isPositive ? "#6d8d5d88" : "#8d4d4d88"};
-      `
-    }
-  }
+  background-color: ${({ $bgColor }) => $bgColor};
 `;
 
 const CardHeader = styled.div`
@@ -73,11 +62,17 @@ const ReferenceDate = styled.p`
   margin-top: 8px;
 `;
 
+function getBadgeBackgroundColor(variationPercent: number | null) {
+  if (variationPercent === 0 || variationPercent === null) {
+    return '#5d5d5d88';
+  }
+
+  return variationPercent > 0 ? "#6d8d5d88" : "#8d4d4d88";
+}
+
 export function IndicatorCard({ indicator, isFavorite, onToggleFavorite }: Props) {
-  const isNeutral = indicator.variationPercent === 0;
-  const isPositive = indicator.variationPercent >= 0;
   return (
-    <Card $isNeutral={isNeutral} $isPositive={isPositive}>
+    <Card $bgColor={getBadgeBackgroundColor(indicator.variationPercent)}>
       <CardHeader>
         <Title to={`/indicadores/${indicator.code}`}>{indicator.name}</Title>
         <FavoriteButton
