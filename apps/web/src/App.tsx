@@ -3,6 +3,7 @@ import styled, { ThemeProvider } from "styled-components";
 import { theme } from "./styles/theme";
 import { Dashboard } from "./pages/Dashboard";
 import { IndicatorDetail } from "./pages/IndicatorDetail";
+import { Favorites } from "./pages/Favorites";
 import { Header } from "./components/Header";
 import { Container } from "./assets/components";
 
@@ -24,6 +25,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/indicadores/:code" element={<IndicatorDetail />} />
+              <Route path="/favoritos" element={<Favorites />} />
             </Routes>
           </Container>
         </Main>

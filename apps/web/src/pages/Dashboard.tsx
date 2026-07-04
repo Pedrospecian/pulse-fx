@@ -4,6 +4,7 @@ import { api, type IndicatorSummary } from "../lib/api";
 import { IndicatorCard } from "../components/IndicatorCard";
 import { Spinner } from "../components/Spinner";
 import { Text, PageTitle } from "../assets/components";
+import { useFavorites } from "../hooks/useFavorites";
 
 const CardsWrapper = styled.div`
   display: flex;
@@ -14,31 +15,19 @@ const CardsWrapper = styled.div`
 
 export function Dashboard() {
   const [indicators, setIndicators] = useState<IndicatorSummary[]>([]);
-  const [favoriteCodes, setFavoriteCodes] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const { favoriteCodes, toggleFavorite } = useFavorites();
 
   useEffect(() => {
-    Promise.all([api.getDashboard(), api.getFavorites()])
-      .then(([dashboard, favorites]) => {
-        setIndicators(dashboard);
-        setFavoriteCodes(new Set(favorites.map((f) => f.code)));
-      })
+    api
+      .getDashboard()
+      .then(setIndicators)
       .finally(() => setLoading(false));
   }, []);
 
-  async function toggleFavorite(code: string) {
-    const isFav = favoriteCodes.has(code);
-    if (isFav) {
-      await api.removeFavorite(code);
-      setFavoriteCodes((prev) => {
-        const next = new Set(prev);
-        next.delete(code);
-        return next;
-      });
-    } else {
-      await api.addFavorite(code);
-      setFavoriteCodes((prev) => new Set(prev).add(code));
-    }
+  function handleToggleFavorite(code: string) {
+    const indicator = indicators.find((i) => i.code === code);
+    if (indicator) toggleFavorite(indicator);
   }
 
   if (loading) return <Spinner />;
@@ -56,7 +45,7 @@ export function Dashboard() {
             key={indicator.code}
             indicator={indicator}
             isFavorite={favoriteCodes.has(indicator.code)}
-            onToggleFavorite={toggleFavorite}
+            onToggleFavorite={handleToggleFavorite}
           />
         ))}
       </CardsWrapper>

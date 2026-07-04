@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { api, type IndicatorDetail as IndicatorDetailType } from "../lib/api";
 import { VariationBadge } from "../components/VariationBadge";
 import { Spinner } from "../components/Spinner";
