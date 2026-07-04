@@ -1,6 +1,19 @@
+import styled from "styled-components";
 import { useEffect, useState } from "react";
 import { api, type IndicatorSummary } from "../lib/api";
 import { IndicatorCard } from "../components/IndicatorCard";
+
+const Text = styled.div`
+  color: #444444;
+  font-size: 14px;
+`;
+
+const CardsWrapper = styled.div`
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+`;
 
 export function Dashboard() {
   const [indicators, setIndicators] = useState<IndicatorSummary[]>([]);
@@ -36,11 +49,11 @@ export function Dashboard() {
   return (
     <div>
       <h1>Pulse FX</h1>
-      <p style={{ color: "#57606a", fontSize: 13 }}>
+      <Text>
         Este conteúdo não é recomendação de investimento, mas sim educacional.
-      </p>
+      </Text>
 
-      <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginTop: 16 }}>
+      <CardsWrapper>
         {indicators.map((indicator) => (
           <IndicatorCard
             key={indicator.code}
@@ -49,7 +62,7 @@ export function Dashboard() {
             onToggleFavorite={toggleFavorite}
           />
         ))}
-      </div>
+      </CardsWrapper>
     </div>
   );
 }

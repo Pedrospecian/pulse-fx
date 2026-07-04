@@ -1,3 +1,4 @@
+import styled from "styled-components";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api, type IndicatorDetail as IndicatorDetailType } from "../lib/api";
@@ -34,8 +35,8 @@ export function IndicatorDetail() {
       <table style={{ marginTop: 24, borderCollapse: "collapse", width: "100%" }}>
         <thead>
           <tr>
-            <th style={{ textAlign: "left", borderBottom: "1px solid #d0d7de" }}>Data</th>
-            <th style={{ textAlign: "right", borderBottom: "1px solid #d0d7de" }}>Valor</th>
+            <th style={{ textAlign: "left", borderBottom: "1px solid #cccccc" }}>Data</th>
+            <th style={{ textAlign: "right", borderBottom: "1px solid #cccccc" }}>Valor</th>
           </tr>
         </thead>
         <tbody>
