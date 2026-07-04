@@ -15,7 +15,7 @@ const IndicatorTable = styled.table`
 
 const LimitationsText = styled.p`
   font-size: 12px;
-  color: #999999;
+  color: ${({ theme }) => theme.colors.textMuted};
   margin-top: 16px;
 `;
 
@@ -23,7 +23,7 @@ const StyledRow = styled.tr`
   background-color: transparent;
 
   &:nth-child(2n) {
-    background-color: #55555588;
+    background-color: ${({ theme }) => theme.colors.rowStripe};
   }
 
   td {
@@ -36,6 +36,11 @@ const IndicatorValue = styled.p`
   font-size: 24px;
   display: flex;
   align-items: center;
+`;
+
+const Th = styled.th<{ $align: "left" | "right" }>`
+  text-align: ${({ $align }) => $align};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.tableBorder};
 `;
 
 export function IndicatorDetail() {
@@ -79,8 +84,8 @@ export function IndicatorDetail() {
       <IndicatorTable>
         <thead>
           <tr>
-            <th style={{ textAlign: "left", borderBottom: "1px solid #cccccc" }}>Data</th>
-            <th style={{ textAlign: "right", borderBottom: "1px solid #cccccc" }}>Valor</th>
+            <Th $align="left">Data</Th>
+            <Th $align="right">Valor</Th>
           </tr>
         </thead>
         <tbody>

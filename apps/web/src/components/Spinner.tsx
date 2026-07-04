@@ -1,4 +1,4 @@
-import styled, { keyframes } from "styled-components";
+import styled, { keyframes, useTheme } from "styled-components";
 
 interface SpinnerProps {
   size?: number;
@@ -40,10 +40,13 @@ const VisuallyHidden = styled.span`
   border: 0;
 `;
 
-export function Spinner({ size = 24, color = "#999999", label = "Carregando..." }: SpinnerProps) {
+export function Spinner({ size = 24, color, label = "Carregando..." }: SpinnerProps) {
+  const theme = useTheme();
+  const resolvedColor = color ?? theme.colors.textMuted;
+
   return (
     <CircleWrapper>
-      <Circle role="status" $size={size} $color={color} data-testid="spinner">
+      <Circle role="status" $size={size} $color={resolvedColor} data-testid="spinner">
         <VisuallyHidden>{label}</VisuallyHidden>
       </Circle>
     </CircleWrapper>

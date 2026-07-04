@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import styled from "styled-components";
+import styled, { ThemeProvider } from "styled-components";
+import { theme } from "./styles/theme";
 import { Dashboard } from "./pages/Dashboard";
 import { IndicatorDetail } from "./pages/IndicatorDetail";
 import { Header } from "./components/Header";
@@ -9,22 +10,24 @@ const Main = styled.main`
   font-family: sans-serif;
   padding-top: 32px;
   padding-bottom: 32px;
-  color: #ffffff;
-  background-color: #2d2d34;
+  color: ${({ theme }) => theme.colors.text};
+  background-color: ${({ theme }) => theme.colors.background};
 `;
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Header />
-      <Main>
-        <Container>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/indicadores/:code" element={<IndicatorDetail />} />
-          </Routes>
-        </Container>
-      </Main>
-    </BrowserRouter>
+    <ThemeProvider theme={theme}>
+      <BrowserRouter>
+        <Header />
+        <Main>
+          <Container>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/indicadores/:code" element={<IndicatorDetail />} />
+            </Routes>
+          </Container>
+        </Main>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }

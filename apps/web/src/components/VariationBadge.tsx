@@ -5,24 +5,23 @@ interface VariationBadgeProps {
   variationPercent: number | null;
 }
 
-const Badge = styled.span<{ $bgColor: string | null }>`
+type Variant = "positive" | "negative" | "neutral";
+
+function getVariant(variationPercent: number | null): Variant {
+  if (variationPercent === 0 || variationPercent === null) return "neutral";
+  return variationPercent > 0 ? "positive" : "negative";
+}
+
+const Badge = styled.span<{ $variant: Variant }>`
   font-weight: 600;
   font-size: 75%;
-  color: #ffffff;
+  color: ${({ theme }) => theme.colors.onBadge};
   border-radius: 6px;
   box-sizing: border-box;
   margin-left: 12px;
   padding: 3px 6px;
-  background-color: ${({ $bgColor }) => $bgColor};
+  background-color: ${({ theme, $variant }) => theme.colors[$variant]};
 `;
-
-function getBadgeBackgroundColor(variationPercent: number | null) {
-  if (variationPercent === 0 || variationPercent === null) {
-    return '#5d5d5d';
-  }
-
-  return variationPercent > 0 ? "#55b542" : "#ff6552";
-}
 
 function getCaret(variationPercent: number | null) {
   if (variationPercent === 0 || variationPercent === null) {
@@ -37,9 +36,11 @@ function getCaret(variationPercent: number | null) {
 }
 
 export function VariationBadge({ variationPercent }: VariationBadgeProps) {
+  const variant = getVariant(variationPercent);
+
   if (variationPercent === null) {
     return (
-      <Badge data-testid="variation-badge" $bgColor={getBadgeBackgroundColor(null)}>
+      <Badge data-testid="variation-badge" $variant={variant}>
         — sem dado suficiente
       </Badge>
     );
@@ -49,7 +50,7 @@ export function VariationBadge({ variationPercent }: VariationBadgeProps) {
   const formatted = `${(isPositive) ? "+" : ""}${variationPercent.toFixed(2)}%`;
 
   return (
-    <Badge data-testid="variation-badge" $bgColor={getBadgeBackgroundColor(variationPercent)}>
+    <Badge data-testid="variation-badge" $variant={variant}>
       {getCaret(variationPercent)}
       {formatted}
     </Badge>

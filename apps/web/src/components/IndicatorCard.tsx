@@ -10,18 +10,31 @@ interface Props {
   onToggleFavorite: (code: string) => void;
 }
 
-const Card = styled.div<{ $bgColor: string | null }>`
+type Variant = "positive" | "negative" | "neutral";
+
+function getVariant(variationPercent: number | null): Variant {
+  if (variationPercent === 0 || variationPercent === null) return "neutral";
+  return variationPercent > 0 ? "positive" : "negative";
+}
+
+const surfaceByVariant = {
+  positive: "positiveSurface",
+  negative: "negativeSurface",
+  neutral: "neutralSurface",
+} as const;
+
+const Card = styled.div<{ $variant: Variant }>`
   border-radius: 8px;
   min-width: 260px;
   box-sizing: border-box;
-  background-color: ${({ $bgColor }) => $bgColor};
+  background-color: ${({ theme, $variant }) => theme.colors[surfaceByVariant[$variant]]};
 `;
 
 const CardHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #15151544;
+  background-color: ${({ theme }) => theme.colors.cardHeaderOverlay};
   border-radius: 8px 8px 0px 0px;
   padding: 16px;
   width: 100%;
@@ -45,7 +58,7 @@ const FavoriteButton = styled.button`
   background: none;
   cursor: pointer;
   font-size: 18px;
-  color: #ffbb00;
+  color: ${({ theme }) => theme.colors.accent};
   display: flex;
   align-items: center;
   margin-left: 6px;
@@ -58,21 +71,15 @@ const Value = styled.p`
 
 const ReferenceDate = styled.p`
   font-size: 12px;
-  color: #999999;
+  color: ${({ theme }) => theme.colors.textMuted};
   margin-top: 8px;
 `;
 
-function getBadgeBackgroundColor(variationPercent: number | null) {
-  if (variationPercent === 0 || variationPercent === null) {
-    return '#5d5d5d88';
-  }
-
-  return variationPercent > 0 ? "#6d8d5d88" : "#8d4d4d88";
-}
-
 export function IndicatorCard({ indicator, isFavorite, onToggleFavorite }: Props) {
+  const variant = getVariant(indicator.variationPercent);
+
   return (
-    <Card $bgColor={getBadgeBackgroundColor(indicator.variationPercent)}>
+    <Card $variant={variant}>
       <CardHeader>
         <Title to={`/indicadores/${indicator.code}`}>{indicator.name}</Title>
         <FavoriteButton

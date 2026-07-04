@@ -4,8 +4,8 @@ import { Container } from "../assets/components";
 const HeaderComponent = styled.header`
   font-family: sans-serif;
   font-size: 32px;
-  color: #ffffff;
-  background-color: #434452;
+  color: ${({ theme }) => theme.colors.text};
+  background-color: ${({ theme }) => theme.colors.headerBackground};
   font-weight: 700;
   padding: 16px;
 `;
