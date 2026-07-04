@@ -2,11 +2,7 @@ import styled from "styled-components";
 import { useEffect, useState } from "react";
 import { api, type IndicatorSummary } from "../lib/api";
 import { IndicatorCard } from "../components/IndicatorCard";
-
-const Text = styled.div`
-  color: #444444;
-  font-size: 14px;
-`;
+import { Text } from "../assets/components";
 
 const CardsWrapper = styled.div`
   display: flex;

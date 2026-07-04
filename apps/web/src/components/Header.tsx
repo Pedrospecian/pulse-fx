@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { Container } from "../assets/components";
 
 const HeaderComponent = styled.header`
   font-family: sans-serif;
@@ -12,7 +13,9 @@ const HeaderComponent = styled.header`
 export function Header() {
   return (
     <HeaderComponent>
-      Pulse FX
+      <Container>
+        Pulse FX
+      </Container>
     </HeaderComponent>
   );
 }

@@ -11,16 +11,22 @@ interface Props {
 }
 
 const Card = styled.div`
-  border: 1px solid #cccccc;
   border-radius: 8px;
-  padding: 16px;
   min-width: 220px;
+  background-color: #1d1d1d88;
 `;
 
-const Header = styled.div`
+const CardHeader = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
+  background-color: #15151588;
+  border-radius: 8px 8px 0px 0px;
+  padding: 16px;
+`;
+
+const CardBody = styled.div`
+  padding: 16px;
 `;
 
 const Title = styled(Link)`
@@ -34,7 +40,7 @@ const FavoriteButton = styled.button`
   background: none;
   cursor: pointer;
   font-size: 18px;
-  color: #eab308;
+  color: #ffbb00;
   display: flex;
   align-items: center;
 `;
@@ -46,36 +52,38 @@ const Value = styled.p`
 
 const ReferenceDate = styled.p`
   font-size: 12px;
-  color: #444444;
+  color: #999999;
   margin-top: 8px;
 `;
 
 export function IndicatorCard({ indicator, isFavorite, onToggleFavorite }: Props) {
   return (
     <Card>
-      <Header>
+      <CardHeader>
         <Title to={`/indicadores/${indicator.code}`}>{indicator.name}</Title>
         <FavoriteButton
           onClick={() => onToggleFavorite(indicator.code)}
           aria-label={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
         >
-          {isFavorite ? <FaStar /> : <FaRegStar />}
+          {isFavorite ? <FaStar size={20} /> : <FaRegStar size={20} />}
         </FavoriteButton>
-      </Header>
+      </CardHeader>
 
-      <Value>
-        {indicator.lastValue?.toLocaleString("pt-BR", { maximumFractionDigits: 4 }) ?? "—"}{" "}
-        <small>{indicator.unit}</small>
-      </Value>
+      <CardBody>
+        <Value>
+          {indicator.lastValue?.toLocaleString("pt-BR", { maximumFractionDigits: 4 }) ?? "—"}{" "}
+          <small>{indicator.unit}</small>
+        </Value>
 
-      <VariationBadge variationPercent={indicator.variationPercent} />
+        <VariationBadge variationPercent={indicator.variationPercent} />
 
-      <ReferenceDate>
-        Ref.:{" "}
-        {indicator.lastReferenceDate
-          ? new Date(indicator.lastReferenceDate).toLocaleDateString("pt-BR")
-          : "—"}
-      </ReferenceDate>
+        <ReferenceDate>
+          Ref.:{" "}
+          {indicator.lastReferenceDate
+            ? new Date(indicator.lastReferenceDate).toLocaleDateString("pt-BR")
+            : "—"}
+        </ReferenceDate>
+      </CardBody>
     </Card>
   );
 }

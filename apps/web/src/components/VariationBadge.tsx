@@ -10,7 +10,7 @@ const Badge = styled.span<{ $isPositive: boolean | null }>`
   ${({ $isPositive }) =>
     $isPositive === null
       ? css`
-          color: #444444;
+          color: #999999;
           font-weight: 400;
         `
       : css`
