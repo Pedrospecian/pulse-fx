@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api, type IndicatorDetail as IndicatorDetailType } from "../lib/api";
 import { VariationBadge } from "../components/VariationBadge";
+import { Spinner } from "../components/Spinner";
 import { FaArrowLeft } from "react-icons/fa";
 import { PageTitle, BackButton } from "../assets/components";
 
@@ -51,15 +52,19 @@ export function IndicatorDetail() {
       .finally(() => setLoading(false));
   }, [code]);
 
-  if (loading) return <p>Carregando...</p>;
-  if (!data) return (<div>
-    <p>Indicador não encontrado.</p>
+  if (loading) {
+    return <Spinner />;
+  }
+  if (!data) {
+    return (<div>
+      <p>Indicador não encontrado.</p>
 
-    <BackButton to="/">
-      <FaArrowLeft size={16} style={{ marginRight: '6px' }} />
-      Voltar
-    </BackButton>
-  </div>);
+      <BackButton to="/">
+        <FaArrowLeft size={16} style={{ marginRight: '6px' }} />
+        Voltar
+      </BackButton>
+    </div>);
+  }
 
   return (
     <div>

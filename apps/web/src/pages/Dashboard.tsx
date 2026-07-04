@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { useEffect, useState } from "react";
 import { api, type IndicatorSummary } from "../lib/api";
 import { IndicatorCard } from "../components/IndicatorCard";
+import { Spinner } from "../components/Spinner";
 import { Text, PageTitle } from "../assets/components";
 
 const CardsWrapper = styled.div`
@@ -40,7 +41,7 @@ export function Dashboard() {
     }
   }
 
-  if (loading) return <p>Carregando indicadores...</p>;
+  if (loading) return <Spinner />;
 
   return (
     <div>

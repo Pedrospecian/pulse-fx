@@ -1,4 +1,4 @@
-import styled, { css } from "styled-components";
+import styled from "styled-components";
 import { FaCaretUp, FaCaretDown } from "react-icons/fa";
 
 interface VariationBadgeProps {
@@ -45,9 +45,8 @@ export function VariationBadge({ variationPercent }: VariationBadgeProps) {
     );
   }
 
-  const isPositive = variationPercent >= 0;
-  const isNeutral = variationPercent === 0;
-  const formatted = `${(isPositive && !isNeutral) ? "+" : ""}${variationPercent.toFixed(2)}%`;
+  const isPositive = variationPercent > 0;
+  const formatted = `${(isPositive) ? "+" : ""}${variationPercent.toFixed(2)}%`;
 
   return (
     <Badge data-testid="variation-badge" $bgColor={getBadgeBackgroundColor(variationPercent)}>
