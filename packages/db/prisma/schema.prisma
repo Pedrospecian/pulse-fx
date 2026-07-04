@@ -1,0 +1,67 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SeriesSource {
+  BCB
+  FRED
+}
+
+enum SeriesType {
+  DAILY   // ex.: câmbio (PTAX) — variação comparada em dias úteis
+  MONTHLY // ex.: indicadores macro — variação comparada em meses
+}
+
+model Indicator {
+  code           String       @id
+  name           String
+  description    String
+  source         SeriesSource
+  sourceSeriesId String
+  seriesType     SeriesType
+  unit           String
+  createdAt      DateTime     @default(now())
+
+  observations Observation[]
+  favorite     Favorite?
+  syncState    SyncState?
+
+  @@map("indicators")
+}
+
+model Observation {
+  id            Int       @id @default(autoincrement())
+  indicatorCode String
+  indicator     Indicator @relation(fields: [indicatorCode], references: [code])
+  referenceDate DateTime  @db.Date
+  value         Decimal   @db.Decimal(18, 6)
+  createdAt     DateTime  @default(now())
+
+  @@unique([indicatorCode, referenceDate], name: "indicatorCode_referenceDate")
+  @@index([indicatorCode, referenceDate])
+  @@map("observations")
+}
+
+model Favorite {
+  indicatorCode String    @id
+  indicator     Indicator @relation(fields: [indicatorCode], references: [code])
+  createdAt     DateTime  @default(now())
+
+  @@map("favorites")
+}
+
+model SyncState {
+  indicatorCode String    @id
+  indicator     Indicator @relation(fields: [indicatorCode], references: [code])
+  lastSyncedAt  DateTime?
+  lastStatus    String? // "success" | "error"
+  lastError     String?
+
+  @@map("sync_state")
+}

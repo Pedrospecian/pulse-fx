@@ -17,13 +17,16 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
+      # IMPORTANTE: sempre informar -d (o banco), senão o pg_isready tenta
+      # conectar num banco com o mesmo nome do usuário e loga um FATAL
+      # (foi exatamente o erro reportado: "database app does not exist").
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pulsefx} -d ${POSTGRES_DB:-pulsefx}"]
       interval: 5s
       timeout: 5s
       retries: 10
 
   # ---------------------------------------------------------------
-  # Mensageria (RabbitMQ)
+  # Mensageria: sync -> publica "indicator.updated" -> api-public consome
   # ---------------------------------------------------------------
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
@@ -40,6 +43,21 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+
+  # ---------------------------------------------------------------
+  # Migrations do Prisma - roda uma vez e sai (init container)
+  # ---------------------------------------------------------------
+  migrate:
+    build:
+      context: .
+      dockerfile: packages/db/Dockerfile
+    container_name: pulsefx-migrate
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-pulsefx}:${POSTGRES_PASSWORD:-pulsefx}@postgres:5432/${POSTGRES_DB:-pulsefx}?schema=public
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
 
   # ---------------------------------------------------------------
   # api-public: dashboard, detalhe, favoritos (leitura)
@@ -64,7 +82,7 @@ services:
 
   # ---------------------------------------------------------------
   # api-sync: cron de sincronização BCB/FRED + rota admin protegida
-  # --------------------------------------------------------------- 
+  # ---------------------------------------------------------------
   api-sync:
     build:
       context: .
@@ -106,7 +124,7 @@ services:
       - api-sync
 
   # ---------------------------------------------------------------
-  # Frontend (React + TypeScript via Vite)
+  # Frontend
   # ---------------------------------------------------------------
   web:
     build:
