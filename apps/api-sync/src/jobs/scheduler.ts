@@ -3,6 +3,11 @@ import { syncAll } from "../services/sync.service";
 
 const TTL_MINUTES = Number(process.env.SYNC_TTL_MINUTES) || 60;
 
+/*
+ * Roda a cada 15 minutos, mas cada indicador só é realmente buscado na fonte
+ * externa caso o TTL (SYNC_TTL_MINUTES) já tiver expirado. Isso impede que o
+ * sistema faça chamadas descontroladas/redundantes às APIs do BCB e do FRED.
+ */
 export function startScheduler() {
   cron.schedule("*/15 * * * *", async () => {
     console.log("[scheduler] verificando indicadores para sincronização...");
