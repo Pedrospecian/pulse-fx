@@ -71,7 +71,10 @@ não tem múltiplas entidades de negócio, tem duas **responsabilidades** com ne
 diferentes: servir leitura rápida pro frontend, e sincronizar com fontes externas (que é lento,
 pode falhar, precisa de TTL). Por isso separei assim:
 
-- **web**: dashboard, tela de detalhe do indicador, favoritos.
+- **web**: dashboard, tela de detalhe do indicador, e uma tela própria de "Meus Indicadores"
+  (`/favoritos`) que lista só os favoritados. Favoritar/desfavoritar funciona tanto lá quanto no
+  dashboard, através de um hook compartilhado (`useFavorites`) pra não duplicar a lógica entre
+  as duas telas.
 - **gateway**: entrada única de HTTP. `/api/*` vai pro `api-public`, `/admin/*` vai pro
   `api-sync` (e esse último exige o header `X-Admin-Key`).
 - **api-public**: só leitura (dashboard, detalhe, favoritos). Guarda um cache simples em memória
@@ -179,6 +182,7 @@ do caminho antes de subir:
 
 ```bash
 mv docker-compose.override.yml docker-compose.override.yml.disabled
+docker compose up --build web
 ```
 
 ## Testes e lint
@@ -200,10 +204,41 @@ Isso roda os testes de todos os workspaces. Os 5 arquivos de teste que tenho hoj
 Ainda não montei um teste de integração de verdade (API batendo em Postgres real, tipo via
 Testcontainers). Os testes de repositório/HTTP hoje usam mock. Fica como próximo passo.
 
+Lint é um `eslint.config.mjs` único na raiz, cobrindo o monorepo inteiro (backend Node/TS e
+frontend React/TS no mesmo arquivo, cada um com suas regras específicas. Por exemplo, o frontend
+ganha regras de JSX/hooks):
+
+```bash
+npm run lint       # só reporta
+npm run lint:fix   # corrige o que dá pra corrigir sozinho
+```
+
 ## Troubleshooting
 
 Só documentando aqui os perrengues que já passei pra não esquecer:
 
+- **`Failed to resolve entry for package "@pulse-fx/db"` (ou `@pulse-fx/core`) ao rodar
+  testes**: `packages/db` e `packages/core` apontam `main`/`types` pra `dist/`, não pra `src/`
+  (isso é necessário pro `node dist/index.js` funcionar dentro do Docker, sem `ts-node`). Só que
+  isso significa que, se você nunca rodou o build desses dois pacotes localmente, `dist/` não
+  existe e a resolução do módulo falha. `npm test` (na raiz) já builda os dois automaticamente
+  antes de rodar os testes (`pretest` no `package.json` raiz e em cada workspace que depende
+  deles). Se você rodar `vitest` direto (sem passar pelo `npm test`), esse passo é pulado. Nesse
+  caso, builda manualmente uma vez:
+  ```bash
+  npm run generate -w packages/db
+  npm run build -w packages/db
+  npm run build -w packages/core
+  ```
+  Pra watch mode de um workspace específico, use o script `test:watch` de dentro dele. Ele já
+  chama o build explicitamente antes de subir o `vitest` (o hook automático `pretest` do npm só
+  dispara antes do script chamado exatamente `test`; como `test:watch` é nome customizado, ele
+  não entra nessa convenção sozinho, por isso o `test:watch` chama `npm run pretest` na mão antes
+  do `vitest`). E não use `vitest` direto com `-w` esperando que seja "workspace" como no `npm`.
+  No `vitest`, `-w` é atalho de `--watch`:
+  ```bash
+  npm run test:watch -w packages/core
+  ```
 - **`role "..." does not exist` no Postgres**: o Postgres só cria usuário/banco na primeira vez
   que o volume é inicializado. Se você já tinha subido antes (mesmo sem sucesso) e mudou o
   `.env` depois, isso não vai ter efeito nenhum sobre o volume já existente. Resolve com:
@@ -218,7 +253,7 @@ Só documentando aqui os perrengues que já passei pra não esquecer:
   `docker compose build --no-cache migrate api-public api-sync`.
 - **`api-public`/`api-sync` reiniciando em loop**: normalmente é sintoma de um dos dois problemas
   acima. Depois de corrigir, `docker compose up --build --force-recreate` resolve.
-- **pgAdmin não conecta / erro de senha mesmo com senha certa**: tinha um   Postgres nativo instalado
+- **pgAdmin não conecta / erro de senha mesmo com senha certa**: tinha um Postgres nativo instalado
   no Windows escutando também na porta 5432, e o cliente ia parar nele em vez de ir no container. No Windows: `netstat -ano | findstr :5432` e depois `tasklist /FI "PID eq <pid>"` pra achar o processo. Por causa disso, o Postgres do Docker aqui expõe a porta
   **5433** no host (`5433:5432` no compose), então no pgAdmin é `localhost:5433`, não `5432`. A
   comunicação interna entre os serviços continua em `postgres:5432` normal, isso só afeta quem

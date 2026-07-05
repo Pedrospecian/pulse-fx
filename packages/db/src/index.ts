@@ -1,8 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 
 // Singleton para evitar múltiplas conexões em hot-reload / múltiplos imports.
+// "var" aqui não é escolha de estilo — é a única forma de declarar uma
+// variável global aumentada em "declare global" no TypeScript.
 declare global {
-  // eslint-disable-next-line no-var
   var __prisma: PrismaClient | undefined;
 }
 

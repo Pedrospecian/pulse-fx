@@ -1,0 +1,17 @@
+# Aplicado automaticamente pelo "docker compose up" (não precisa de flag extra).
+# Sobrescreve só o serviço "web" pra usar o Vite dev server com hot-reload,
+# em vez do build de produção servido pelo Nginx.
+#
+# Pra voltar ao comportamento de produção, apague ou renomeie este arquivo
+# (ex.: docker-compose.override.yml.disabled) antes de subir o ambiente.
+
+services:
+  web:
+    build:
+      context: ./apps/web
+      target: dev
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules # evita que o node_modules do host sobrescreva o do container
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:4000}

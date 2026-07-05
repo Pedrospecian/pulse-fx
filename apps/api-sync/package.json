@@ -6,7 +6,9 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
-    "test": "vitest run"
+    "pretest": "cd ../../packages/db && npm run generate && npm run build && cd ../core && npm run build",
+    "test": "vitest run",
+    "test:watch": "npm run pretest && vitest"
   },
   "dependencies": {
     "@pulse-fx/core": "*",
