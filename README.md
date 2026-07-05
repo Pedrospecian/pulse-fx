@@ -35,6 +35,10 @@ por chat depois.
 
 ## Como rodar
 
+Pré-requisito: Docker e Docker Compose instalados (Docker Desktop cobre os dois).
+Não é necessário ter Node instalado para rodar via Docker, mas é necessário tê-lo para
+para desenvolvimento fora dele (ver [Rodando o frontend](#rodando-o-frontend)).
+
 ```bash
 cp .env.example .env
 ```
@@ -57,8 +61,8 @@ docker compose up --build
 - Postgres: localhost:5433
 
 O banco começa vazio. Quem popula o catálogo de indicadores é o próprio `api-sync` assim que
-sobe. A primeira sincronização de dados de verdade acontece no primeiro ciclo do cron (até 15
-min), ou você pode forçar na hora:
+sobe, e ele já dispara a primeira sincronização de dados reais imediatamente no boot (não
+precisa esperar o cron periódico). Se por algum motivo quiser forçar de novo manualmente:
 
 ```bash
 curl -X POST http://localhost:4000/admin/sync \
