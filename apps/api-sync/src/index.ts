@@ -7,7 +7,11 @@ const app = express();
 app.use(express.json());
 
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
-app.use("/admin", adminRouter);
+// Sem prefixo aqui de propósito: o gateway já monta esse serviço em "/admin/*"
+// e o Express remove esse prefixo antes de repassar pro proxy — se o
+// api-sync também exigisse "/admin" aqui, a requisição chegaria sem o
+// prefixo (removido duas vezes) e cairia em "Cannot GET".
+app.use(adminRouter);
 
 const PORT = Number(process.env.PORT) || 4002;
 
