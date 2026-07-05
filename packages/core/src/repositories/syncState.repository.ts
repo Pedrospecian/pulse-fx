@@ -27,7 +27,12 @@ export const syncStateRepository = {
   async markError(indicatorCode: string, error: string): Promise<void> {
     await prisma.syncState.upsert({
       where: { indicatorCode },
-      create: { indicatorCode, lastSyncedAt: new Date(), lastStatus: "error", lastError: error },
+      // lastSyncedAt fica de fora aqui de propósito: só uma sincronização
+      // bem-sucedida deve "resetar o relógio" do TTL. Se falhar, o indicador
+      // continua "stale" e o próximo ciclo do cron tenta de novo — sem essa
+      // correção, um erro na primeira tentativa travava o indicador sem
+      // dado por até SYNC_TTL_MINUTES, mesmo nunca tendo sincronizado nada.
+      create: { indicatorCode, lastStatus: "error", lastError: error },
       update: { lastStatus: "error", lastError: error },
     });
   },

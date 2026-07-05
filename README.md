@@ -7,6 +7,7 @@ testes, migrations versionadas e tudo rodando em Docker sem eu precisar explicar
 por chat depois.
 
 ## Sumário
+- [Screenshots](#screenshots)
 - [Como rodar](#como-rodar)
 - [Variáveis de ambiente](#variáveis-de-ambiente)
 - [Arquitetura](#arquitetura)
@@ -17,6 +18,20 @@ por chat depois.
 - [Rodando o frontend](#rodando-o-frontend)
 - [Testes e lint](#testes-e-lint)
 - [Troubleshooting](#troubleshooting)
+
+## Screenshots
+
+**Dashboard**: cards com os 4 indicadores, valor mais recente, data de referência e variação:
+
+![Dashboard](docs/screenshots/dashboard.png)
+
+**Detalhe do indicador**: histórico em tabela e texto sobre limitações dos dados:
+
+![Detalhe do indicador](docs/screenshots/detalhe.png)
+
+**Meus Indicadores**: favoritos:
+
+![Meus Indicadores](docs/screenshots/favoritos.png)
 
 ## Como rodar
 
@@ -155,6 +170,13 @@ Umas coisas que decidi no caminho e acho importante deixar registrado:
 - **Prisma com migration versionada.** O schema fica em `packages/db/prisma/schema.prisma`, a
   migration inicial tá versionada em `packages/db/prisma/migrations/`. Um serviço `migrate` no
   compose roda `prisma migrate deploy` antes de qualquer API subir.
+- **Tentei um teste de integração real (Testcontainers) e recuei.** A ideia era subir um
+  Postgres efêmero de verdade e rodar os repositórios contra ele, em vez de mockar o Prisma. Não
+  consegui fazer funcionar no Windows + Docker Desktop a tempo, pois o `.start()` do container
+  travava indefinidamente, provavelmente relacionado ao container auxiliar "Ryuk" que o
+  Testcontainers sobe pra limpeza automática. Preferi voltar pros testes com mock (que já
+  cobrem o mínimo exigido) a entregar um teste que trava, em vez de investir mais tempo tentando
+  resolver o problema perto do prazo. Fica como próximo passo real.
 
 ## Rodando o frontend
 
@@ -201,12 +223,13 @@ Isso roda os testes de todos os workspaces. Os 5 arquivos de teste que tenho hoj
 4. `apps/api-public/src/routes/indicators.routes.test.ts`: dashboard e detalhe.
 5. `apps/web/src/components/VariationBadge.test.tsx`: componente React.
 
-Ainda não montei um teste de integração de verdade (API batendo em Postgres real, tipo via
-Testcontainers). Os testes de repositório/HTTP hoje usam mock. Fica como próximo passo.
+Ainda não tenho um teste de integração de verdade (API batendo em Postgres real). Cheguei a
+tentar com Testcontainers (ver "Decisões e trade-offs"), mas não deu tempo de resolver antes do
+prazo. Os testes de repositório/HTTP hoje usam mock.
 
 Lint é um `eslint.config.mjs` único na raiz, cobrindo o monorepo inteiro (backend Node/TS e
 frontend React/TS no mesmo arquivo, cada um com suas regras específicas. Por exemplo, o frontend
-ganha regras de JSX/hooks):
+ganha regras específicas de JSX/hooks):
 
 ```bash
 npm run lint       # só reporta
@@ -238,6 +261,24 @@ Só documentando aqui os perrengues que já passei pra não esquecer:
   No `vitest`, `-w` é atalho de `--watch`:
   ```bash
   npm run test:watch -w packages/core
+  ```
+- **Dashboard mostrando "— sem dado suficiente" em tudo**: normalmente significa que ainda não
+  existe observação nenhuma persistida (ou só existe uma, e a variação precisa de pelo menos
+  duas pra calcular). Isso **não** tem relação com fim de semana. A regra de variação usa a
+  observação anterior disponível dentro do que já foi persistido, não conta dia de calendário
+  (ver seção de variação percentual mais acima). A causa mais provável é: o container do
+  `api-sync` acabou de subir (ou o volume do Postgres foi resetado) e o cron ainda não rodou.
+  Desde a correção mais recente, o `api-sync` já dispara uma sincronização assim que sobe, sem
+  esperar os 15 minutos do cron. Se ainda estiver vendo isso, force manualmente:
+  ```bash
+  curl -X POST "http://localhost:4000/admin/sync?force=true" -H "X-Admin-Key: <sua chave>"
+  ```
+- **`BCB PTAX respondeu 502`**: é uma falha transitória do lado do próprio BCB (Bad Gateway).
+  A API do Olinda/OData da PTAX é visivelmente mais instável que a do SGS (usada pela Selic,
+  por exemplo). O `fetchPtax`/`fetchSgsSeries` já tentam de novo automaticamente em caso de
+  502/503/504 (até 2 vezes, com backoff), mas se ainda assim falhar, é só forçar de novo depois:
+  ```bash
+  curl -X POST "http://localhost:4000/admin/sync?force=true" -H "X-Admin-Key: <sua chave>"
   ```
 - **`role "..." does not exist` no Postgres**: o Postgres só cria usuário/banco na primeira vez
   que o volume é inicializado. Se você já tinha subido antes (mesmo sem sucesso) e mudou o
